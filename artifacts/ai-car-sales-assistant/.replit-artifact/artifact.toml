@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI Car Sales Assistant"
+description = "A professional Nigerian automotive sales assistant demo that answers customer questions from sample vehicle inventory, qualifies buyers, and captures lead summaries without requiring a paid AI API."
+version = "1.0.0"
+id = "artifacts/ai-car-sales-assistant"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19666
+
+[services.development]
+run = "pnpm --filter @workspace/ai-car-sales-assistant run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-car-sales-assistant", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ai-car-sales-assistant/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19666"
+BASE_PATH = "/"
