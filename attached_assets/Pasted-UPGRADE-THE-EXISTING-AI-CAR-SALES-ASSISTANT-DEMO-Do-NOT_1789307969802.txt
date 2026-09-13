@@ -1,0 +1,281 @@
+UPGRADE THE EXISTING AI CAR SALES ASSISTANT DEMO.
+
+Do NOT delete the current application. Improve the existing app and keep its current chat functionality.
+
+The goal is to make this look like a professional DEMO that I can show to a real Nigerian car dealership as an example of an AI sales assistant.
+
+IMPORTANT:
+- This is a demo only.
+- Do not claim that it belongs to Betacar or any real dealership.
+- Use fictional/sample dealership branding: "AutoAssist AI".
+- Use sample vehicle data only.
+- Do not connect to real customer accounts, WhatsApp accounts, payment systems, or private databases.
+- Do not require a paid API key for this demo.
+
+1. IMPROVE THE HOME/CHAT SCREEN
+
+Keep the existing chat interface but make it more polished and professional.
+
+At the top show:
+
+AutoAssist AI
+AI Sales Assistant for Car Dealerships
+
+Small text:
+"Helping dealerships answer enquiries, qualify buyers and capture leads 24/7."
+
+Add these quick-action buttons:
+
+• Browse Cars
+• Cars Under ₦20M
+• Financing
+• Book a Test Drive
+• Talk to Sales
+
+The AI should respond naturally to questions about the sample inventory.
+
+2. ADD SAMPLE VEHICLE INVENTORY
+
+Create 6 realistic SAMPLE vehicles:
+
+Toyota Camry 2020
+Price: ₦18,500,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 72,000 km
+
+Honda Accord 2020
+Price: ₦17,000,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 68,000 km
+
+Toyota Corolla 2021
+Price: ₦16,500,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 55,000 km
+
+Lexus RX 350 2019
+Price: ₦28,000,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 81,000 km
+
+Mercedes-Benz C300 2020
+Price: ₦32,000,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 61,000 km
+
+Hyundai Elantra 2021
+Price: ₦14,500,000
+Transmission: Automatic
+Fuel: Petrol
+Mileage: 49,000 km
+
+Clearly label all of these:
+"SAMPLE VEHICLE — DEMO DATA"
+
+3. VEHICLE CARDS
+
+Create attractive vehicle cards showing:
+
+• Vehicle image placeholder
+• Make and model
+• Year
+• Price
+• Mileage
+• Transmission
+• Fuel
+• "View Details" button
+• "I'm Interested" button
+
+When "View Details" is clicked, show a vehicle details page/modal.
+
+When "I'm Interested" is clicked, start the lead qualification conversation.
+
+4. AI SALES CONVERSATION
+
+The assistant should behave like a professional car sales assistant.
+
+Example:
+
+Customer:
+"I need a Toyota under ₦20 million."
+
+Assistant:
+"Sure. Based on our demo inventory, the Toyota Camry 2020 is ₦18.5M and the Toyota Corolla 2021 is ₦16.5M. Which one would you like to know more about?"
+
+The assistant should be able to answer:
+
+• Which cars are available?
+• Cars under a particular budget
+• Questions about year
+• Questions about mileage
+• Questions about transmission
+• Questions about fuel type
+• Financing questions
+• Test-drive questions
+
+Never invent vehicles that aren't in the sample inventory.
+
+5. LEAD QUALIFICATION
+
+When a customer shows serious interest, the AI should collect:
+
+Full name
+Phone number
+Vehicle interested in
+Budget
+Cash or financing
+Preferred test-drive date
+Additional message
+
+Show a professional form.
+
+After submission, display:
+
+"Lead captured successfully."
+
+Then show a lead summary.
+
+Example:
+
+NEW CUSTOMER LEAD
+
+Name: John Doe
+Phone: 080XXXXXXXX
+Vehicle: Toyota Camry 2020
+Budget: ₦18M–₦20M
+Payment: Financing
+Test Drive: Requested
+
+Status: NEW LEAD
+
+6. DEALER DASHBOARD
+
+Add a separate "Dealer Dashboard" section.
+
+It should show demo statistics:
+
+Total Leads: 24
+New Leads: 8
+Test Drives: 5
+Financing Enquiries: 7
+
+Create a table/list of sample leads with:
+
+Customer
+Vehicle
+Budget
+Payment
+Status
+Date
+
+Add status labels:
+
+NEW
+CONTACTED
+QUALIFIED
+TEST DRIVE
+CLOSED
+
+Add buttons:
+
+"Mark Contacted"
+"Mark Qualified"
+
+These can work locally in the demo.
+
+7. TEST DRIVE FEATURE
+
+Create a "Book a Test Drive" form with:
+
+Name
+Phone
+Vehicle
+Preferred Date
+Preferred Time
+
+After submission show:
+
+"Test drive request received."
+
+Then show the request in the Dealer Dashboard.
+
+8. FINANCING FEATURE
+
+Create a simple financing enquiry form:
+
+Name
+Phone
+Vehicle
+Estimated Budget
+Deposit Available
+Preferred Payment Period
+
+Do NOT provide real financial advice.
+
+After submission, create a financing lead in the dashboard.
+
+9. DEMO MODE
+
+Clearly display somewhere:
+
+"DEMO MODE — All vehicles and customer information shown are fictional."
+
+Do not use any real dealership's name, logo, phone number, customer data or inventory.
+
+10. PROFESSIONAL DESIGN
+
+Make the design look like a real SaaS product that a dealership could purchase.
+
+Use:
+
+• Clean modern layout
+• Professional typography
+• Responsive mobile design
+• Good spacing
+• Attractive vehicle cards
+• Clear buttons
+• Professional dashboard
+• Smooth transitions
+• Mobile-first layout
+
+The application must work properly on Android phones and desktop browsers.
+
+11. DEMO PRESENTATION
+
+Add a small section called:
+
+"How AutoAssist AI Helps Dealerships"
+
+Show four benefits:
+
+24/7 Customer Responses
+Capture More Leads
+Qualify Serious Buyers
+Reduce Repetitive Enquiries
+
+Add a button:
+
+"See How It Works"
+
+12. IMPORTANT TECHNICAL REQUIREMENTS
+
+Keep the application functional.
+
+Do not introduce unnecessary paid services.
+
+Do not require OpenAI API credentials for the basic demo.
+
+Use local/sample data for the vehicle inventory and leads.
+
+Make all buttons functional.
+
+Do not replace the existing application with a static landing page.
+
+After making the changes, test the entire application and fix any errors.
+
+The final result should look good enough that I can open it on my phone and demonstrate it to a real car dealership owner.
