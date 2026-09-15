@@ -288,6 +288,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/car-inventory':
+        specifier: workspace:*
+        version: link:../../lib/car-inventory
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
@@ -366,6 +369,9 @@ importers:
       '@workspace/api-zod':
         specifier: workspace:*
         version: link:../../lib/api-zod
+      '@workspace/car-inventory':
+        specifier: workspace:*
+        version: link:../../lib/car-inventory
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
@@ -613,6 +619,8 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  lib/car-inventory: {}
 
   lib/db:
     dependencies:

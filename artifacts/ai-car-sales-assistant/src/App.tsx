@@ -29,16 +29,7 @@ import {
   X,
 } from 'lucide-react';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
-
-type Vehicle = {
-  id: string;
-  name: string;
-  year: number;
-  price: number;
-  mileage: number;
-  transmission: string;
-  fuel: string;
-};
+import { inventory, type Vehicle } from '@workspace/car-inventory';
 
 type Message = {
   id: number;
@@ -48,6 +39,9 @@ type Message = {
   actions?: string[];
   time: string;
 };
+
+type AssistantResponse = Pick<Message, 'text' | 'vehicleIds' | 'actions'>;
+type AssistantMode = 'ai' | 'demo';
 
 type LeadStatus = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'TEST DRIVE' | 'CLOSED';
 
@@ -68,15 +62,6 @@ type View = 'chat' | 'inventory' | 'dashboard';
 type Modal = 'lead' | 'test-drive' | 'finance' | 'details' | null;
 
 const queryClient = new QueryClient();
-
-const inventory: Vehicle[] = [
-  { id: 'camry-2020', name: 'Toyota Camry 2020', year: 2020, price: 18_500_000, mileage: 72_000, transmission: 'Automatic', fuel: 'Petrol' },
-  { id: 'accord-2020', name: 'Honda Accord 2020', year: 2020, price: 17_000_000, mileage: 68_000, transmission: 'Automatic', fuel: 'Petrol' },
-  { id: 'corolla-2021', name: 'Toyota Corolla 2021', year: 2021, price: 16_500_000, mileage: 55_000, transmission: 'Automatic', fuel: 'Petrol' },
-  { id: 'rx-350-2019', name: 'Lexus RX 350 2019', year: 2019, price: 28_000_000, mileage: 81_000, transmission: 'Automatic', fuel: 'Petrol' },
-  { id: 'c300-2020', name: 'Mercedes-Benz C300 2020', year: 2020, price: 32_000_000, mileage: 61_000, transmission: 'Automatic', fuel: 'Petrol' },
-  { id: 'elantra-2021', name: 'Hyundai Elantra 2021', year: 2021, price: 14_500_000, mileage: 49_000, transmission: 'Automatic', fuel: 'Petrol' },
-];
 
 const demoLeads: Lead[] = [
   { id: 'demo-1', name: 'Chioma Eze', phone: '0803 482 9201', vehicle: 'Toyota Camry 2020', budget: '₦18M–₦20M', payment: 'Financing', testDrive: 'Requested', additionalMessage: '', status: 'NEW', date: 'Today, 09:42' },
@@ -136,18 +121,25 @@ function parseMileageMax(input: string) {
   return match[2] === 'k' || match[2] === 'thousand' || value < 1000 ? value * 1_000 : value;
 }
 
-function getAssistantResponse(input: string) {
+function getAssistantResponse(input: string, history: Message[] = []): AssistantResponse {
   const lower = input.toLowerCase();
-  const vehicle = findVehicle(input);
-  const budget = parseBudget(input);
+  const rememberedUserText = history
+    .filter((message) => message.role === 'user')
+    .map((message) => message.text)
+    .join(' ');
+  const context = `${rememberedUserText} ${input}`.trim();
+  const vehicle = findVehicle(context);
+  const budget = parseBudget(context);
   const mileageMax = parseMileageMax(input);
-  const yearMatch = lower.match(/\b(2019|2020|2021)\b/);
+  const yearMatch = context.match(/\b(2019|2020|2021)\b/);
   const wantsDrive = /test drive|test-drive|drive it|book.*drive/.test(lower);
   const wantsPerson = /salesperson|sales person|human|agent|call me|speak to|contact me|talk to sales/.test(lower);
   const wantsFinance = /financ|installment|monthly|loan|payment plan|deposit/.test(lower);
   const wantsInventory = /available|inventory|cars|vehicles|what do you have|show me|options|browse/.test(lower);
   const wantsSpecs = /mileage|miles|transmission|gear|fuel|petrol|year|specification|specs/.test(lower);
-  const brand = ['toyota', 'honda', 'lexus', 'mercedes', 'hyundai'].find((name) => lower.includes(name));
+  const brand = ['toyota', 'honda', 'lexus', 'mercedes', 'hyundai'].find((name) => context.toLowerCase().includes(name));
+  const wantsFamilyCar = /family|children|kids|reliable/.test(lower);
+  const wantsLowestMileage = /lowest|least|min(?:imum)?/.test(lower) && /mileage|miles|km/.test(lower);
 
   if (wantsPerson) {
     return {
@@ -173,9 +165,38 @@ function getAssistantResponse(input: string) {
   if (budget) {
     let matches = inventory.filter((item) => item.price <= budget);
     if (brand) matches = matches.filter((item) => item.name.toLowerCase().includes(brand));
+    if (/automatic/.test(lower)) matches = matches.filter((item) => item.transmission.toLowerCase() === 'automatic');
+    if (/manual/.test(lower)) matches = matches.filter((item) => item.transmission.toLowerCase() === 'manual');
+    if (/diesel/.test(lower)) matches = matches.filter((item) => item.fuel.toLowerCase() === 'diesel');
+    if (/petrol/.test(lower)) matches = matches.filter((item) => item.fuel.toLowerCase() === 'petrol');
+    if (/around|about|close to/.test(lower)) {
+      const nearby = inventory.filter((item) =>
+        item.price >= budget * 0.8 &&
+        item.price <= budget * 1.2 &&
+        (!brand || item.name.toLowerCase().includes(brand)) &&
+        (!/automatic/.test(lower) || item.transmission.toLowerCase() === 'automatic'),
+      );
+      if (nearby.length) matches = nearby;
+    }
+    if (wantsFamilyCar) {
+      const familyIds = new Set(['camry-2020', 'accord-2020', 'corolla-2021', 'rx-350-2019']);
+      const familyMatches = inventory.filter((item) => familyIds.has(item.id));
+      const withinBudget = familyMatches.filter((item) => item.price <= budget);
+      const nextClosest = familyMatches
+        .filter((item) => item.price > budget && item.price <= budget * 1.1)
+        .sort((a, b) => a.price - b.price);
+      const familyOptions = [...withinBudget, ...nextClosest];
+      if (familyOptions.length) {
+        return {
+          text: `Based on our demo inventory, ${familyOptions.map((item) => `${item.name} is ${formatNaira(item.price)}`).join(' and ')}. ${withinBudget.length ? `${withinBudget.map((item) => item.name).join(' and ')} ${withinBudget.length === 1 ? 'is' : 'are'} within your stated budget.` : 'These are the closest family-car matches to your stated budget.'} Would you like to see the details?`,
+          vehicleIds: familyOptions.map((item) => item.id),
+          actions: ['Talk to Sales', 'Book a Test Drive'],
+        };
+      }
+    }
     if (matches.length) {
       return {
-        text: `I found ${matches.length} ${matches.length === 1 ? 'option' : 'options'} at or below ${formatNaira(budget)}${brand ? ` from ${brand.charAt(0).toUpperCase() + brand.slice(1)}` : ''}. All listed vehicles are automatic and petrol. Which one would you like to explore?`,
+        text: `I found ${matches.length} ${matches.length === 1 ? 'option' : 'options'} in the sample inventory at or below ${formatNaira(budget)}${brand ? ` from ${brand.charAt(0).toUpperCase() + brand.slice(1)}` : ''}:\n${matches.map((item) => `• ${item.name} — ${formatNaira(item.price)}`).join('\n')}\nWhich one would you like to explore?`,
         vehicleIds: matches.map((item) => item.id),
         actions: ['Talk to Sales'],
       };
@@ -183,6 +204,30 @@ function getAssistantResponse(input: string) {
     return {
       text: `The closest match in the sample inventory is ${formatNaira(Math.min(...inventory.map((item) => item.price)))}. I can show the full list or connect you with a salesperson to discuss options.`,
       actions: ['Browse Cars', 'Talk to Sales'],
+    };
+  }
+  if (wantsLowestMileage) {
+    const lowest = [...inventory].sort((a, b) => a.mileage - b.mileage)[0];
+    return {
+      text: `The lowest-mileage vehicle in our sample inventory is the ${lowest.name} with ${formatMileage(lowest.mileage)}. Would you like to see its details?`,
+      vehicleIds: [lowest.id],
+      actions: ['Talk to Sales', 'Book a Test Drive'],
+    };
+  }
+  if (wantsFamilyCar) {
+    const familyIds = ['camry-2020', 'accord-2020', 'corolla-2021', 'rx-350-2019'];
+    return {
+      text: 'For a family car, I would start with the Toyota Camry, Honda Accord, Toyota Corolla, or Lexus RX from our sample inventory. Tell me your budget and I can narrow that down.',
+      vehicleIds: familyIds,
+      actions: ['Cars Under ₦20M', 'Talk to Sales'],
+    };
+  }
+  if (brand) {
+    const matches = inventory.filter((item) => item.name.toLowerCase().includes(brand));
+    return {
+      text: `We have ${matches.length} sample ${brand.charAt(0).toUpperCase() + brand.slice(1)} ${matches.length === 1 ? 'vehicle' : 'vehicles'}:\n${matches.map((item) => `• ${item.name} — ${formatNaira(item.price)}`).join('\n')}\nWould you like me to compare them?`,
+      vehicleIds: matches.map((item) => item.id),
+      actions: ['Talk to Sales'],
     };
   }
   if (!vehicle && (mileageMax || yearMatch || /automatic|manual|petrol|diesel/.test(lower))) {
@@ -479,18 +524,14 @@ function Home() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | undefined>();
   const [leads, setLeads] = useState<Lead[]>(demoLeads);
   const [inventorySearch, setInventorySearch] = useState('');
+  const [assistantMode, setAssistantMode] = useState<AssistantMode>('demo');
   const conversationRef = useRef<HTMLDivElement>(null);
-  const responseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messageId = useRef(10);
 
   useEffect(() => {
     const container = conversationRef.current;
     if (container) container.scrollTop = container.scrollHeight;
   }, [messages, isTyping]);
-
-  useEffect(() => () => {
-    if (responseTimer.current) clearTimeout(responseTimer.current);
-  }, []);
 
   const filteredInventory = useMemo(() => {
     const query = inventorySearch.trim().toLowerCase();
@@ -503,14 +544,43 @@ function Home() {
     setModal(nextModal);
   };
 
-  const addAssistantReply = (input: string) => {
+  const requestAiResponse = async (input: string, history: Message[]): Promise<AssistantResponse | null> => {
+    const apiPath = `${import.meta.env.BASE_URL.replace(/\/?$/, '/') }api/ai/chat`;
+    try {
+      const response = await fetch(apiPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: input,
+          history: history.slice(-12).map((message) => ({ role: message.role, content: message.text })),
+        }),
+        signal: AbortSignal.timeout(12_000),
+      });
+      if (!response.ok) return null;
+      const payload = await response.json() as {
+        mode?: AssistantMode;
+        text?: unknown;
+        vehicleIds?: unknown;
+        actions?: unknown;
+      };
+      if (payload.mode !== 'ai' || typeof payload.text !== 'string') return null;
+      return {
+        text: payload.text,
+        vehicleIds: Array.isArray(payload.vehicleIds) ? payload.vehicleIds.filter((id): id is string => typeof id === 'string') : undefined,
+        actions: Array.isArray(payload.actions) ? payload.actions.filter((action): action is string => typeof action === 'string') : undefined,
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const addAssistantReply = async (input: string, history: Message[]) => {
     setIsTyping(true);
-    if (responseTimer.current) clearTimeout(responseTimer.current);
-    responseTimer.current = setTimeout(() => {
-      const response = getAssistantResponse(input);
-      setMessages((current) => [...current, { id: messageId.current++, role: 'assistant', ...response, time: nowLabel() }]);
-      setIsTyping(false);
-    }, 520);
+    const aiResponse = await requestAiResponse(input, history);
+    const response = aiResponse ?? getAssistantResponse(input, history);
+    setAssistantMode(aiResponse ? 'ai' : 'demo');
+    setMessages((current) => [...current, { id: messageId.current++, role: 'assistant', ...response, time: nowLabel() }]);
+    setIsTyping(false);
   };
 
   const sendMessage = (value: string) => {
@@ -519,7 +589,7 @@ function Home() {
     setActiveView('chat');
     setMessages((current) => [...current, { id: messageId.current++, role: 'user', text, time: nowLabel() }]);
     setDraft('');
-    addAssistantReply(text);
+    addAssistantReply(text, messages);
   };
 
   const handleAction = (action: string) => {
@@ -598,7 +668,7 @@ function Home() {
             <div className="quick-actions" aria-label="Quick actions"><span>Try a quick action</span><button type="button" onClick={() => setActiveView('inventory')}><CarFront size={14} /> Browse Cars</button><button type="button" onClick={() => sendMessage('Show me cars under ₦20M')}><Gauge size={14} /> Cars Under ₦20M</button><button type="button" onClick={() => sendMessage('I want to ask about financing')}><Banknote size={14} /> Financing</button><button type="button" onClick={() => openModal('test-drive')}><CalendarClock size={14} /> Book a Test Drive</button><button type="button" onClick={() => openModal('lead')}><Phone size={14} /> Talk to Sales</button></div>
             <div className="chat-layout">
               <section className="chat-card" aria-label="Chat with AutoAssist AI">
-                <div className="chat-card-header"><div className="assistant-identity"><span className="assistant-avatar"><Bot size={19} /></span><div><strong>AutoAssist AI</strong><span>Typically replies in seconds</span></div></div><span className="secure-label"><ShieldCheck size={13} /> Sample data only</span></div>
+                 <div className="chat-card-header"><div className="assistant-identity"><span className="assistant-avatar"><Bot size={19} /></span><div><strong>AutoAssist AI</strong><span>Typically replies in seconds</span></div></div><div className="chat-status-labels"><span className={`mode-indicator ${assistantMode === 'ai' ? 'connected' : ''}`}><Sparkles size={12} /> {assistantMode === 'ai' ? 'AI-powered assistant' : 'Demo mode'}</span><span className="secure-label"><ShieldCheck size={13} /> Sample data only</span></div></div>
                 <div className="conversation" ref={conversationRef} aria-live="polite"><div className="day-divider">Today</div>{messages.map((message) => <div className={`message-row ${message.role}`} key={message.id}>{message.role === 'assistant' && <span className="message-avatar"><Sparkles size={14} /></span>}<div className="message-stack"><div className="message-bubble">{message.text}</div>{message.vehicleIds && <div className="chat-vehicle-grid">{message.vehicleIds.map((id) => { const vehicle = inventory.find((item) => item.id === id); return vehicle ? <VehicleCard key={vehicle.id} vehicle={vehicle} compact onDetails={(selected) => openModal('details', selected)} onInterested={(selected) => openModal('lead', selected)} /> : null; })}</div>}{message.actions && <div className="message-actions">{message.actions.map((action) => <button type="button" className="quick-chip" key={action} onClick={() => handleAction(action)}>{action}<ArrowRight size={12} /></button>)}</div>}<span className="message-time">{message.time}</span></div>{message.role === 'user' && <span className="message-avatar user"><UserRound size={14} /></span>}</div>)}{isTyping && <div className="message-row" data-testid="status-assistant-typing"><span className="message-avatar"><Sparkles size={14} /></span><div className="message-stack"><div className="message-bubble typing-bubble"><span /><span /><span /></div></div></div>}</div>
                 <div className="composer-wrap"><div className="composer"><textarea value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(draft); } }} placeholder="Ask about a car, price, or next step..." aria-label="Message AutoAssist AI" rows={1} /><button type="button" className="send-button" onClick={() => sendMessage(draft)} disabled={!draft.trim() || isTyping} aria-label="Send message"><Send size={16} /></button></div><p className="composer-hint">Press Enter to send · Shift + Enter for a new line</p></div>
               </section>

@@ -1,0 +1,154 @@
+UPGRADE THE EXISTING AUT0ASSIST AI APP.
+
+IMPORTANT: Do NOT delete or replace the existing UI, vehicle inventory, dealer dashboard, lead forms, test-drive feature, or financing feature. Keep everything that already works.
+
+I now want to make the CHAT ASSISTANT genuinely AI-powered.
+
+GOAL:
+A customer should be able to type natural questions in their own words, and the assistant should understand the customer's intent and respond intelligently using the SAMPLE vehicle inventory already in the application.
+
+AI BEHAVIOR:
+
+The assistant should understand messages such as:
+
+"I have ₦16 million. What car can I get?"
+
+"I need a family car."
+
+"Show me Toyota cars."
+
+"Which car has the lowest mileage?"
+
+"I want something below ₦20m."
+
+"Do you have a Honda?"
+
+"I need an automatic car for around ₦17m."
+
+"Can I finance this car?"
+
+"I want to book a test drive."
+
+"I want to speak to a salesperson."
+
+The assistant must reason over the existing sample inventory and recommend only vehicles that actually exist in the inventory.
+
+EXAMPLE:
+
+Customer:
+"I have ₦16 million and need a reliable family car."
+
+Assistant:
+"Based on our demo inventory, the Hyundai Elantra 2021 is ₦14.5M and the Toyota Corolla 2021 is ₦16.5M. The Elantra is within your stated budget, while the Corolla is slightly above it. Would you like to see the details of either vehicle?"
+
+ANOTHER EXAMPLE:
+
+Customer:
+"I need something under ₦20m."
+
+Assistant:
+"We have four sample vehicles under ₦20M:
+• Hyundai Elantra 2021 — ₦14.5M
+• Toyota Corolla 2021 — ₦16.5M
+• Honda Accord 2020 — ₦17M
+• Toyota Camry 2020 — ₦18.5M
+
+Would you like me to compare them?"
+
+AI RULES:
+
+1. Never invent a vehicle.
+2. Never invent a price.
+3. Never claim a vehicle is available if it is not in the sample inventory.
+4. Clearly identify the inventory as DEMO/SAMPLE DATA.
+5. If the customer asks something that cannot be answered from the inventory, say that a salesperson can provide more information.
+6. Do not give professional financial advice.
+7. Do not pretend to be connected to a real dealership.
+8. Keep responses short, friendly and professional.
+9. Ask useful follow-up questions when necessary.
+10. When a customer appears ready to buy, offer "Talk to Sales" or "Book a Test Drive."
+
+AI LEAD QUALIFICATION:
+
+When the customer becomes interested in a vehicle, the assistant should naturally collect:
+
+- Full name
+- Phone number
+- Vehicle of interest
+- Budget
+- Cash or financing
+- Test-drive interest
+
+Do not ask for everything at once. Ask naturally during the conversation.
+
+After collecting the information, create a lead and make it appear in the existing Dealer Dashboard.
+
+TECHNICAL REQUIREMENTS:
+
+Use the existing vehicle inventory as the AI's source of truth.
+
+Create a clean server-side AI integration so the API key is NEVER exposed in frontend/browser code.
+
+Use an environment variable called:
+
+OPENAI_API_KEY
+
+If the OpenAI API key is not configured, keep the existing local demo responses working so the application does not break.
+
+Add clear error handling if the AI API is unavailable.
+
+Do not hard-code an API key anywhere in the source code.
+
+Create a system prompt for the AI that explains:
+
+"You are AutoAssist AI, an AI sales assistant for a car dealership demo. Your job is to help customers find vehicles, compare the sample inventory, answer vehicle questions, qualify serious buyers, and guide customers toward speaking with a salesperson or booking a test drive. Use ONLY the supplied inventory data. Never invent vehicle information. All inventory is demonstration data."
+
+CONVERSATION MEMORY:
+
+The assistant should remember information already provided during the current conversation.
+
+For example:
+
+Customer:
+"My budget is ₦18 million."
+
+Assistant:
+"Great. What type of car are you looking for?"
+
+Customer:
+"Toyota."
+
+The assistant should understand that the customer wants a Toyota around ₦18M without asking for the budget again.
+
+UI:
+
+Keep the existing chat design.
+
+Add a small indicator showing:
+
+"AI-powered assistant"
+
+when the real AI API is connected.
+
+When the AI is unavailable, show:
+
+"Demo mode"
+
+Do not expose API keys or technical error details to customers.
+
+IMPORTANT:
+
+After implementing everything:
+
+1. Test the chat.
+2. Test natural-language questions.
+3. Test budget filtering.
+4. Test vehicle recommendations.
+5. Test lead capture.
+6. Test the Dealer Dashboard.
+7. Test the app on mobile.
+8. Fix any errors you find.
+
+Do not remove existing features.
+
+The final result should be a convincing AI car-sales assistant demo that I can show to a real Nigerian car dealership.

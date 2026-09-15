@@ -189,7 +189,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .assistant-identity strong, .assistant-identity span { display: block; }
 .assistant-identity strong { font-size: 0.76rem; }
 .assistant-identity span { margin-top: 3px; color: hsl(var(--muted-foreground)); font-size: 0.61rem; }
-.secure-label { color: hsl(var(--success)); font-size: 0.6rem; }
+.chat-status-labels { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.mode-indicator, .secure-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.6rem; }
+.mode-indicator { padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 999px; color: hsl(var(--muted-foreground)); background: hsl(var(--muted) / 0.3); }
+.mode-indicator.connected { border-color: hsl(var(--success) / 0.35); color: hsl(var(--success)); background: hsl(var(--success) / 0.08); }
+.secure-label { color: hsl(var(--success)); }
 .conversation { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: 18px; overflow-y: auto; padding: 20px clamp(14px, 3vw, 30px) 18px; scroll-behavior: smooth; }
 .day-divider { display: flex; align-items: center; gap: 10px; color: hsl(var(--muted-foreground)); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .day-divider::before, .day-divider::after { height: 1px; flex: 1; background: hsl(var(--border)); content: ""; }
